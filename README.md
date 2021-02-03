@@ -1,2 +1,2 @@
-# Example
-An example greeter plugin
+# TaskJingle
+Plays jingle at end of slayer task
