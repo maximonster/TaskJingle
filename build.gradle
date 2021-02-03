@@ -13,6 +13,7 @@ repositories {
 def runeLiteVersion = '1.6.38'
 
 dependencies {
+	implementation files('libs/jaco-mp3-player-0.9.5.jar')
 	compileOnly group: 'net.runelite', name:'client', version: runeLiteVersion
 
 	compileOnly 'org.projectlombok:lombok:1.18.4'
