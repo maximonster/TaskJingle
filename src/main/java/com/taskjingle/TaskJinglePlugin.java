@@ -6,9 +6,7 @@ import javax.inject.Inject;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
-import net.runelite.api.GameState;
 import net.runelite.api.events.ChatMessage;
-import net.runelite.api.events.GameStateChanged;
 import net.runelite.client.RuneLite;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
@@ -18,13 +16,7 @@ import net.runelite.client.util.Text;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.awt.*;
-import java.awt.image.BufferedImage;
-import java.net.HttpURLConnection;
-import java.util.*;
 import java.io.*;
-import java.net.URL;
-import java.util.stream.Collectors;
 import jaco.mp3.player.MP3Player;
 
 @Slf4j
