@@ -32,7 +32,7 @@ public class TaskJinglePlugin extends Plugin
 	private TaskJingleConfig config;
 
 	private static final Pattern CHAT_COMPLETE_MESSAGE = Pattern.compile("You've completed (?:at least )?(?<tasks>[\\d,]+) (?:Wilderness )?tasks?(?: and received \\d+ points, giving you a total of (?<points>[\\d,]+)| and reached the maximum amount of Slayer points \\((?<points2>[\\d,]+)\\))?");
-	private MP3Player trackPlayer = new MP3Player(new File(RuneLite.RUNELITE_DIR, "TaskDone.mp3"));
+	private MP3Player trackPlayer = new MP3Player(new File(RuneLite.RUNELITE_DIR, "task-jingle.mp3"));
 
 
 
