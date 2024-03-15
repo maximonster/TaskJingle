@@ -52,6 +52,12 @@ public class TaskJinglePlugin extends Plugin
 		chatCommandManager.registerCommandAsync(TESTJINGLE_COMMAND_STRING, this::testcustomtrack);
 
 	}
+
+	@Override
+	protected void shutDown() throws Exception{
+		log.info("Task jingle stopped!");
+		chatCommandManager.unregisterCommand(TESTJINGLE_COMMAND_STRING);
+	}
 	@Subscribe
 	public void onChatMessage(ChatMessage event)
 	{
