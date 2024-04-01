@@ -93,7 +93,7 @@ public interface TaskJingleConfig extends Config
 			keyName = "customleveluppath",
 			name = "Custom level up music path/link",
 			description = "Specify file path or URL(must contain http:// or https://) to custom MP3",
-			position =
+			position = 7
 	)
 	default String custompathl()
 	{
