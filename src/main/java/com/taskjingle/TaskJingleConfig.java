@@ -39,12 +39,21 @@ public interface TaskJingleConfig extends Config
 	{
 		return 100;
 	}
-
+	@ConfigItem(
+			keyName = "Taskjingle",
+			name = "Task Jingle",
+			description = "Turns on jingles for slayer tasks",
+			position = 2
+	)
+	default boolean taskjingleon()
+	{
+		return true;
+	}
 	@ConfigItem(
 			keyName = "customjingle",
-			name = "Custom Jingle",
+			name = "Custom Task Jingle",
 			description = "Toggles whether a custom jingle is used",
-			position = 2
+			position = 3
 	)
 	default boolean customjingle()
 	{
@@ -52,11 +61,41 @@ public interface TaskJingleConfig extends Config
 	}
 	@ConfigItem(
 			keyName = "custompath",
-			name = "Custom path",
+			name = "Custom Task jingle path/link",
 			description = "Specify file path or URL(must contain http:// or https://) to custom MP3",
-			position = 3
+			position = 4
 	)
 	default String custompath()
+	{
+		return "";
+	}
+	@ConfigItem(
+			keyName = "lvlupjingle",
+			name = "Level up music",
+			description = "Turns on music for level ups",
+			position = 5
+	)
+	default boolean lvlupjingleon()
+	{
+		return true;
+	}
+	@ConfigItem(
+			keyName = "customlevelupmusic",
+			name = "Custom Level up music",
+			description = "Toggles whether a custom level up music is used",
+			position = 6
+	)
+	default boolean customjinglel()
+	{
+		return false;
+	}
+	@ConfigItem(
+			keyName = "customleveluppath",
+			name = "Custom level up music path/link",
+			description = "Specify file path or URL(must contain http:// or https://) to custom MP3",
+			position =
+	)
+	default String custompathl()
 	{
 		return "";
 	}
