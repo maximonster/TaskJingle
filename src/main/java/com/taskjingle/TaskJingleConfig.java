@@ -77,7 +77,7 @@ public interface TaskJingleConfig extends Config
 	)
 	default boolean lvlupjingleon()
 	{
-		return true;
+		return false;
 	}
 	@ConfigItem(
 			keyName = "customlevelupmusic",

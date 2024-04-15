@@ -2,31 +2,30 @@ package com.taskjingle;
 
 
 import com.google.inject.Provides;
-import javax.inject.Inject;
-
+import jaco.mp3.player.MP3Player;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.*;
 import net.runelite.api.ChatMessageType;
 import net.runelite.api.Client;
-import net.runelite.api.MessageNode;
+import net.runelite.api.GameState;
+import net.runelite.api.Skill;
 import net.runelite.api.events.ChatMessage;
-import net.runelite.client.RuneLite;
+import net.runelite.api.events.CommandExecuted;
+import net.runelite.api.events.GameStateChanged;
+import net.runelite.api.events.StatChanged;
 import net.runelite.client.chat.*;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.util.Text;
-import net.runelite.api.events.StatChanged;
-import net.runelite.api.events.GameStateChanged;
 
-import java.net.MalformedURLException;
+import javax.inject.Inject;
+import java.io.File;
 import java.net.URL;
+import java.util.EnumMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.*;
-import java.io.*;
-import jaco.mp3.player.MP3Player;
 
 @Slf4j
 @PluginDescriptor(
@@ -51,24 +50,19 @@ public class TaskJinglePlugin extends Plugin
 	private MP3Player customtrack = new MP3Player(getClass().getClassLoader().getResource("task-jingle.mp3"));
 	private MP3Player customltrack = new MP3Player(getClass().getClassLoader().getResource("lvlup.mp3"));
 
-	private static final String TESTJINGLE_COMMAND_STRING = "!testjingle";
-	private static final String TESTLVLJINGLE_COMMAND_STRING = "!testlvljingle";
+	private static final String TESTJINGLE_COMMAND_STRING = "testjingle";
+	private static final String TESTLVLJINGLE_COMMAND_STRING = "testlvljingle";
 	private final Map<Skill, Integer> CurrentLevelsMap = new EnumMap<>(Skill.class);
 
 	@Override
 	protected void startUp() throws Exception
 	{
 		log.info("Task jingle started!");
-		chatCommandManager.registerCommandAsync(TESTJINGLE_COMMAND_STRING, this::testcustomtrack);
-		chatCommandManager.registerCommandAsync(TESTLVLJINGLE_COMMAND_STRING, this::testcustomltrack);
-
 	}
 
 	@Override
 	protected void shutDown() throws Exception{
 		log.info("Task jingle stopped!");
-		chatCommandManager.unregisterCommand(TESTJINGLE_COMMAND_STRING);
-		chatCommandManager.unregisterCommand(TESTLVLJINGLE_COMMAND_STRING);
 		CurrentLevelsMap.clear();
 	}
 	@Subscribe
@@ -108,6 +102,7 @@ public class TaskJinglePlugin extends Plugin
 
 							customtrack = new MP3Player(getClass().getClassLoader().getResource("task-jingle.mp3"));
 						}
+						customtrack.setVolume(config.volume());
 						customtrack.play();
 					} catch (Exception e) {
 						String chatMessage = new ChatMessageBuilder()
@@ -121,8 +116,10 @@ public class TaskJinglePlugin extends Plugin
 								.build());
                     }
                 }
-				else
-				trackPlayer.play();
+				else {
+					trackPlayer.setVolume(config.volume());
+					trackPlayer.play();
+				}
 			}
 		}
 	}
@@ -141,15 +138,10 @@ public class TaskJinglePlugin extends Plugin
 	{
 		final Skill skill = statChanged.getSkill();
 		int skillLevelBefore = CurrentLevelsMap.getOrDefault(skill, -1);
-		log.info("New level: "+ statChanged.getLevel());
-		log.info("Old level: "+ skillLevelBefore);
 		if (skillLevelBefore ==-1 || skillLevelBefore == 0){
-			log.info("Levels were not loaded");
 			Loadcurrentlevels();
 		}
 		else if (statChanged.getLevel() > skillLevelBefore && config.lvlupjingleon()) {
-			log.info("New level: "+ statChanged.getLevel());
-			log.info("Old level: "+ skillLevelBefore);
 
 			CurrentLevelsMap.replace(skill, statChanged.getLevel());
 			if (config.customjinglel()) {
@@ -176,6 +168,7 @@ public class TaskJinglePlugin extends Plugin
 
 						customltrack = new MP3Player(getClass().getClassLoader().getResource("lvlup.mp3"));
 					}
+					customltrack.setVolume(config.volume());
 					customltrack.play();
 				} catch (Exception e) {
 					String chatMessage = new ChatMessageBuilder()
@@ -188,11 +181,25 @@ public class TaskJinglePlugin extends Plugin
 							.runeLiteFormattedMessage(chatMessage)
 							.build());
 				}
-			} else
+			} else{
+				tracklPlayer.setVolume(config.volume());
 				tracklPlayer.play();
+			}
 		}
 	}
-	public void testcustomtrack(ChatMessage commandMessage, String message)
+	@Subscribe
+	public void onCommandExecuted(CommandExecuted commandExecuted)
+	{
+		if (commandExecuted.getCommand().equals(TESTJINGLE_COMMAND_STRING))
+		{
+			testcustomtrack();
+		}
+		if (commandExecuted.getCommand().equals(TESTLVLJINGLE_COMMAND_STRING))
+		{
+			testcustomltrack();
+		}
+	}
+	public void testcustomtrack()
 	{
 		if (config.custompath().endsWith(".mp3")||config.custompath().endsWith(".MP3") )
 		{
@@ -200,13 +207,7 @@ public class TaskJinglePlugin extends Plugin
                 try {
                     customtrack = new MP3Player(new URL(config.custompath()));
                 } catch (Exception e) {
-					String testMessage = new ChatMessageBuilder()
-							.append(ChatColorType.HIGHLIGHT)
-							.append("URL incorrect")
-							.build();
-					final MessageNode messageNode = commandMessage.getMessageNode();
-					messageNode.setRuneLiteFormatMessage(testMessage);
-					client.refreshChat();
+					sendChatMessage("URL could not be loaded. Please check URL");
 					return;
                 }
             }
@@ -216,39 +217,21 @@ public class TaskJinglePlugin extends Plugin
 								customtrack = new MP3Player(new File(config.custompath()));
 
 				}catch (Exception e) {
-					String testMessage = new ChatMessageBuilder()
-						.append(ChatColorType.HIGHLIGHT)
-						.append("Path incorrect")
-						.build();
-					final MessageNode messageNode = commandMessage.getMessageNode();
-					messageNode.setRuneLiteFormatMessage(testMessage);
-					client.refreshChat();
+						sendChatMessage("File path seems to be incorrect. Please check file path");
 					return;
 				}
 			}
-			String testMessage = new ChatMessageBuilder()
-					.append(ChatColorType.HIGHLIGHT)
-					.append("Your custom track is loaded successfully. It should be playing now.")
-					.build();
-			final MessageNode messageNode = commandMessage.getMessageNode();
-			messageNode.setRuneLiteFormatMessage(testMessage);
-			client.refreshChat();
+					sendChatMessage("Your custom track is loaded successfully. It should be playing now.");
 		}
 		else
 		{
-			String testMessage = new ChatMessageBuilder()
-					.append(ChatColorType.HIGHLIGHT)
-					.append("Your custom track is not an MP3 file. Default track loaded")
-					.build();
-			final MessageNode messageNode = commandMessage.getMessageNode();
-			messageNode.setRuneLiteFormatMessage(testMessage);
-			client.refreshChat();
-
+			sendChatMessage("Your custom track is not an MP3 file. Default track loaded");
 			customtrack = new MP3Player(getClass().getClassLoader().getResource("task-jingle.mp3"));
 		}
+		customtrack.setVolume(config.volume());
 		customtrack.play();
 	}
-	public void testcustomltrack(ChatMessage commandMessage, String message)
+	public void testcustomltrack()
 	{
 		if (config.custompathl().endsWith(".mp3")||config.custompathl().endsWith(".MP3") )
 		{
@@ -256,13 +239,7 @@ public class TaskJinglePlugin extends Plugin
 				try {
 					customltrack = new MP3Player(new URL(config.custompathl()));
 				} catch (Exception e) {
-					String testMessage = new ChatMessageBuilder()
-							.append(ChatColorType.HIGHLIGHT)
-							.append("URL incorrect")
-							.build();
-					final MessageNode messageNode = commandMessage.getMessageNode();
-					messageNode.setRuneLiteFormatMessage(testMessage);
-					client.refreshChat();
+					sendChatMessage("URL could not be loaded. Please check URL");
 					return;
 				}
 			}
@@ -272,36 +249,18 @@ public class TaskJinglePlugin extends Plugin
 					customltrack = new MP3Player(new File(config.custompathl()));
 
 				}catch (Exception e) {
-					String testMessage = new ChatMessageBuilder()
-							.append(ChatColorType.HIGHLIGHT)
-							.append("Path incorrect")
-							.build();
-					final MessageNode messageNode = commandMessage.getMessageNode();
-					messageNode.setRuneLiteFormatMessage(testMessage);
-					client.refreshChat();
+					sendChatMessage("File path seems incorrect. Please check file path");
 					return;
 				}
 			}
-			String testMessage = new ChatMessageBuilder()
-					.append(ChatColorType.HIGHLIGHT)
-					.append("Your custom track is loaded successfully. It should be playing now.")
-					.build();
-			final MessageNode messageNode = commandMessage.getMessageNode();
-			messageNode.setRuneLiteFormatMessage(testMessage);
-			client.refreshChat();
+			sendChatMessage("Your custom track is loaded successfully. It should be playing now.");
 		}
 		else
 		{
-			String testMessage = new ChatMessageBuilder()
-					.append(ChatColorType.HIGHLIGHT)
-					.append("Your custom track is not an MP3 file. Default track loaded")
-					.build();
-			final MessageNode messageNode = commandMessage.getMessageNode();
-			messageNode.setRuneLiteFormatMessage(testMessage);
-			client.refreshChat();
-
+			sendChatMessage("Your custom track is not an MP3 file. Default track loaded");
 			customltrack = new MP3Player(getClass().getClassLoader().getResource("lvlup.mp3"));
 		}
+		customltrack.setVolume(config.volume());
 		customltrack.play();
 	}
 	private void Loadcurrentlevels()
@@ -313,8 +272,19 @@ public class TaskJinglePlugin extends Plugin
 			CurrentLevelsMap.put(skill, client.getRealSkillLevel(skill));
 			}
 		}
+	}
+	private void sendChatMessage(String chatMessage)
+	{
+		final String message = new ChatMessageBuilder()
+				.append(ChatColorType.HIGHLIGHT)
+				.append(chatMessage)
+				.build();
 
-		log.info("Skill levels loaded!");
+		chatMessageManager.queue(
+				QueuedMessage.builder()
+						.type(ChatMessageType.CONSOLE)
+						.runeLiteFormattedMessage(message)
+						.build());
 	}
 	@Provides
 	TaskJingleConfig provideConfig(ConfigManager configManager)
