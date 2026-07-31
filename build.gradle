@@ -1,5 +1,6 @@
 plugins {
 	id 'java'
+	id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 repositories {
@@ -30,4 +31,12 @@ version = '1.0-SNAPSHOT'
 tasks.withType(JavaCompile) {
 	options.encoding = 'UTF-8'
 	options.release.set(11)
+}
+
+tasks.register('run', JavaExec) {
+	group = 'application'
+	description = 'Launches RuneLite with the TaskJingle plugin sideloaded for local testing'
+	classpath = sourceSets.test.runtimeClasspath
+	main = 'com.taskjingle.TaskJinglePluginTest'
+	enableAssertions = true
 }
