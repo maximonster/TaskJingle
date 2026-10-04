@@ -44,7 +44,7 @@ public class TaskJinglePlugin extends Plugin
 	@Inject
 	private TaskJingleConfig config;
 	private static final String CHAT_COMPLETE_MESSAGE_STRING =
-		"^You've completed (?:at least )?(?<tasks>[\\d,]+) (?:(Wilderness|Mortimer) )?tasks"
+		"^You've completed (?:at least )?(?<tasks>[\\d,]+) (?:(Wilderness|Mortimer) )?tasks";
 	private static final Pattern CHAT_COMPLETE_MESSAGE = Pattern.compile(CHAT_COMPLETE_MESSAGE_STRING);
 	private MP3Player trackPlayer = new MP3Player(getClass().getClassLoader().getResource("task-jingle.mp3"));
 	private MP3Player tracklPlayer = new MP3Player(getClass().getClassLoader().getResource("lvlup.mp3"));
